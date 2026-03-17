@@ -161,6 +161,16 @@ export const draw = (state: GameState, ctx: CanvasRenderingContext2D) => {
       ctx.fillText(m.allyType, m.pos.x, m.pos.y + m.radius + 12);
     }
   }
+  // Draw Aiming Line
+  if (state.status === 'playing' && state.archetype === 'archer') {
+    ctx.beginPath();
+    ctx.moveTo(state.hero.pos.x, state.hero.pos.y);
+    ctx.lineTo(state.mousePos.x, state.mousePos.y);
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
 
   // Draw Hero
   const { hero } = state;

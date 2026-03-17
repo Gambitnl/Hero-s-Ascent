@@ -1,7 +1,10 @@
+
+// Import necessary libraries and types
 import React from 'react';
 import { motion } from 'motion/react';
 import { GameState, Archetype } from '../types';
 
+// Define the props for the ShopScreen component
 interface ShopScreenProps {
   gameState: GameState;
   setGameState: React.Dispatch<React.SetStateAction<GameState>>;
@@ -9,6 +12,7 @@ interface ShopScreenProps {
   setShopTab: React.Dispatch<React.SetStateAction<'archetypes' | 'gadgets' | 'items'>>;
 }
 
+// The ShopScreen component renders the in-game shop UI
 export function ShopScreen({ gameState, setGameState, shopTab, setShopTab }: ShopScreenProps) {
   return (
     <motion.div
@@ -16,9 +20,11 @@ export function ShopScreen({ gameState, setGameState, shopTab, setShopTab }: Sho
       animate={{ opacity: 1 }}
       className="absolute inset-0 bg-neutral-900/95 backdrop-blur-md flex flex-col items-center justify-center p-8 text-center"
     >
+      {/* Shop title and player's money */}
       <h2 className="text-4xl font-bold text-purple-400 mb-4">Shop</h2>
       <p className="text-yellow-400 mb-6 text-xl">Money: ${gameState.money}</p>
       
+      {/* Tabs for different shop sections */}
       <div className="flex gap-4 mb-6">
         <button
           onClick={() => setShopTab('archetypes')}
@@ -40,7 +46,9 @@ export function ShopScreen({ gameState, setGameState, shopTab, setShopTab }: Sho
         </button>
       </div>
 
+      {/* Main content area for the shop */}
       <div className="text-neutral-300 mb-8 bg-neutral-800/50 p-6 rounded-lg border border-neutral-700 w-full max-w-2xl min-h-[300px] max-h-[60vh] overflow-y-auto flex flex-col">
+        {/* Archetypes Tab */}
         {shopTab === 'archetypes' && (
           <div className="flex-1 flex flex-col">
             <h3 className="text-2xl font-bold mb-2 text-white text-left">Archetypes</h3>
@@ -178,6 +186,7 @@ export function ShopScreen({ gameState, setGameState, shopTab, setShopTab }: Sho
             </div>
           </div>
         )}
+        {/* Gadgets Tab */}
         {shopTab === 'gadgets' && (
           <div className="flex-1 flex flex-col">
             <h3 className="text-2xl font-bold mb-2 text-white text-left">Gadgets</h3>
@@ -376,6 +385,7 @@ export function ShopScreen({ gameState, setGameState, shopTab, setShopTab }: Sho
           </div>
         )}
 
+        {/* Items Tab */}
         {shopTab === 'items' && (
           <div className="flex-1 flex flex-col">
             <h3 className="text-2xl font-bold mb-2 text-white text-left">Items</h3>
@@ -586,6 +596,7 @@ export function ShopScreen({ gameState, setGameState, shopTab, setShopTab }: Sho
           </div>
         )}
       </div>
+      {/* Button to go back to the pause menu */}
       <button onClick={() => setGameState(prev => ({ ...prev, status: 'paused' }))} className="px-8 py-3 bg-neutral-600 hover:bg-neutral-500 text-white rounded-lg font-semibold transition-colors">Back to Menu</button>
     </motion.div>
   );

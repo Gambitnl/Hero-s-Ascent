@@ -1,22 +1,70 @@
+
+// Import React and necessary components and types.
 import React from 'react';
 import { GameState, Monster } from '../types';
 import { getId } from '../utils/id';
+import { getLevelMonsters, getSpawnInterval } from '../constants';
 
+/**
+ * Props for the DevPanel component.
+ * @param gameState - The current state of the game.
+ * @param setGameState - Function to update the game state.
+ */
 interface DevPanelProps {
   gameState: GameState;
   setGameState: React.Dispatch<React.SetStateAction<GameState>>;
 }
 
+/**
+ * A panel with developer tools for debugging and testing the game.
+ */
 export function DevPanel({ gameState, setGameState }: DevPanelProps) {
   const { devSettings } = gameState;
 
+  /**
+   * Toggles the developer mode on and off.
+   * When enabling, it resets the current level and player state.
+   * When disabling, it resets the spawn timer to start spawning monsters.
+   */
   const toggleDevMode = () => {
-    setGameState(prev => ({
-      ...prev,
-      devSettings: { ...prev.devSettings, enabled: !prev.devSettings.enabled }
-    }));
+    setGameState(prev => {
+      const isEnabling = !prev.devSettings.enabled;
+      if (isEnabling) {
+        // When enabling dev mode, reset the current level
+        return {
+          ...prev,
+          devSettings: { ...prev.devSettings, enabled: true },
+          status: 'playing', // Keep status as playing to view the game world
+          monsters: [],
+          projectiles: [],
+          moneyDrops: [],
+          effects: [],
+          damageTexts: [],
+          monstersToSpawn: getLevelMonsters(prev.level),
+          spawnTimer: 0,
+          spawnInterval: getSpawnInterval(prev.level),
+          hero: {
+            ...prev.hero,
+            pos: { x: prev.canvasWidth / 2, y: prev.canvasHeight / 2 },
+            hp: prev.hero.maxHp, // Also restore health
+          },
+          bossMessageTimer: 0,
+        };
+      } else {
+        // When disabling dev mode, allow the level to start spawning monsters
+        return {
+          ...prev,
+          devSettings: { ...prev.devSettings, enabled: false },
+          spawnTimer: 0, // Reset spawn timer to begin spawning
+        };
+      }
+    });
   };
 
+  /**
+   * Toggles a specific developer setting.
+   * @param key - The key of the setting to toggle.
+   */
   const toggleSetting = (key: keyof typeof devSettings) => {
     setGameState(prev => ({
       ...prev,
@@ -24,6 +72,11 @@ export function DevPanel({ gameState, setGameState }: DevPanelProps) {
     }));
   };
 
+  /**
+   * Spawns a new entity (monster or ally) at the current mouse position.
+   * @param type - The type of entity to spawn.
+   * @param isFriendly - Whether the entity should be friendly (ally) or not (enemy).
+   */
   const spawnEntity = (type: 'normal' | 'swarm' | 'tank' | 'ranged' | 'boss', isFriendly: boolean) => {
     setGameState(prev => {
       const newMonster: Monster = {
@@ -39,9 +92,9 @@ export function DevPanel({ gameState, setGameState }: DevPanelProps) {
         isBoss: type === 'boss',
         isFriendly,
         attackTimer: 0,
-        isInert: prev.devSettings.spawnInert,
-        isImmune: prev.devSettings.spawnImmune,
-        isStopAttacking: prev.devSettings.spawnStopAttacking,
+        isInert: false,
+        isImmune: false,
+        isStopAttacking: false,
       };
       return {
         ...prev,
@@ -50,8 +103,25 @@ export function DevPanel({ gameState, setGameState }: DevPanelProps) {
     });
   };
 
+  const despawnEntity = (monsterId: string) => {
+    setGameState(prev => ({
+      ...prev,
+      monsters: prev.monsters.filter(m => m.id !== monsterId),
+    }));
+  };
+
+  const toggleMonsterProperty = (monsterId: string, key: 'isInert' | 'isImmune' | 'isStopAttacking') => {
+    setGameState(prev => ({
+      ...prev,
+      monsters: prev.monsters.map(m =>
+        m.id === monsterId ? { ...m, [key]: !m[key] } : m
+      ),
+    }));
+  };
+
   return (
     <div className="flex flex-col gap-4 text-sm w-full">
+      {/* Button to toggle developer mode */}
       <button 
         onClick={toggleDevMode}
         className={`px-3 py-2 rounded font-bold transition-colors ${devSettings.enabled ? 'bg-purple-600 text-white' : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'}`}
@@ -59,24 +129,20 @@ export function DevPanel({ gameState, setGameState }: DevPanelProps) {
         {devSettings.enabled ? 'Dev Mode: ON' : 'Dev Mode: OFF'}
       </button>
 
+      {/* Render the dev panel content only if dev mode is enabled */}
       {devSettings.enabled && (
         <div className="flex flex-col gap-4 bg-neutral-900/80 p-4 rounded border border-purple-500/30">
+          
+          {/* Toggles for various entity behaviors */}
           <div className="flex flex-col gap-2">
             <h3 className="text-purple-400 font-bold border-b border-purple-500/30 pb-1">Toggles</h3>
             <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked={devSettings.spawnInert} onChange={() => toggleSetting('spawnInert')} className="accent-purple-500" />
-              <span className="text-neutral-300">Inert (No Movement)</span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked={devSettings.spawnImmune} onChange={() => toggleSetting('spawnImmune')} className="accent-purple-500" />
-              <span className="text-neutral-300">Immune to Damage</span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked={devSettings.spawnStopAttacking} onChange={() => toggleSetting('spawnStopAttacking')} className="accent-purple-500" />
-              <span className="text-neutral-300">Stop Attacking</span>
+              <input type="checkbox" checked={devSettings.godMode} onChange={() => toggleSetting('godMode')} className="accent-purple-500" />
+              <span className="text-neutral-300">God Mode (Player invincible)</span>
             </label>
           </div>
 
+          {/* Buttons to spawn different types of enemies */}
           <div className="flex flex-col gap-2">
             <h3 className="text-purple-400 font-bold border-b border-purple-500/30 pb-1">Spawn Enemy (at mouse)</h3>
             <div className="grid grid-cols-2 gap-2">
@@ -88,6 +154,7 @@ export function DevPanel({ gameState, setGameState }: DevPanelProps) {
             </div>
           </div>
 
+          {/* Buttons to spawn different types of allies */}
           <div className="flex flex-col gap-2">
             <h3 className="text-purple-400 font-bold border-b border-purple-500/30 pb-1">Spawn Ally (at mouse)</h3>
             <div className="grid grid-cols-2 gap-2">
@@ -96,6 +163,7 @@ export function DevPanel({ gameState, setGameState }: DevPanelProps) {
             </div>
           </div>
 
+          {/* Display stats for all current entities on the screen */}
           <div className="flex flex-col gap-2">
             <h3 className="text-purple-400 font-bold border-b border-purple-500/30 pb-1">Entity Stats</h3>
             <div className="max-h-48 overflow-y-auto pr-2 flex flex-col gap-2">
@@ -104,13 +172,30 @@ export function DevPanel({ gameState, setGameState }: DevPanelProps) {
                 <div key={m.id} className="bg-neutral-950 p-2 rounded border border-neutral-800 text-xs font-mono flex flex-col gap-1">
                   <div className="flex justify-between">
                     <span style={{color: m.color}}>{m.isFriendly ? 'Ally' : 'Enemy'} {m.type || 'normal'}</span>
-                    <span className="text-neutral-500">ID: {m.id}</span>
+                    <div className="flex items-center">
+                      <span className="text-neutral-500 mr-2">ID: {m.id}</span>
+                      <button onClick={() => despawnEntity(m.id)} className="text-red-500 hover:text-red-400 font-bold">X</button>
+                    </div>
                   </div>
                   <div className="grid grid-cols-2 gap-x-2">
                     <span>HP: {Math.ceil(m.hp)}/{m.maxHp}</span>
                     <span>Dmg: {m.damage}</span>
                     <span>Spd: {m.speed}</span>
                     <span>Rad: {m.radius}</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-x-2 mt-1">
+                    <label className="flex items-center gap-1 cursor-pointer text-neutral-400">
+                      <input type="checkbox" checked={m.isInert || false} onChange={() => toggleMonsterProperty(m.id, 'isInert')} className="accent-purple-500 w-3 h-3" />
+                      <span>Inert</span>
+                    </label>
+                    <label className="flex items-center gap-1 cursor-pointer text-neutral-400">
+                      <input type="checkbox" checked={m.isImmune || false} onChange={() => toggleMonsterProperty(m.id, 'isImmune')} className="accent-purple-500 w-3 h-3" />
+                      <span>Immune</span>
+                    </label>
+                    <label className="flex items-center gap-1 cursor-pointer text-neutral-400">
+                      <input type="checkbox" checked={m.isStopAttacking || false} onChange={() => toggleMonsterProperty(m.id, 'isStopAttacking')} className="accent-purple-500 w-3 h-3" />
+                      <span>No-Atk</span>
+                    </label>
                   </div>
                 </div>
               ))}

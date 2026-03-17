@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
@@ -29,14 +30,21 @@ import {
 
 
 export default function Game() {
+  // --- Component Mounting ---
+  // This state ensures that the component only renders on the client-side, 
+  // preventing issues with server-side rendering (SSR) and local storage access.
   const [isMounted, setIsMounted] = useState(false);
   useEffect(() => {
     const timer = setTimeout(() => setIsMounted(true), 0);
     return () => clearTimeout(timer);
   }, []);
 
+  // --- Refs and State ---
+  // Refs for accessing DOM elements.
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // The main game state, initialized lazily to load data from local storage.
   const [gameState, setGameState] = useState<GameState>(() => {
     let initialMoney = 0;
     let unlockedArchetypes: Archetype[] = ['archer'];
@@ -44,6 +52,7 @@ export default function Game() {
     let gadgets: Gadgets = { ...INITIAL_GADGETS };
     let inventory: Inventory = { ...INITIAL_INVENTORY };
 
+    // Load saved data from local storage if on the client-side.
     if (typeof window !== 'undefined') {
       const savedMoney = localStorage.getItem('hero_ascent_money');
       if (savedMoney) {
@@ -73,6 +82,7 @@ export default function Game() {
       }
     }
 
+    // Return the initial game state.
     return {
       status: 'start',
       level: 1,
@@ -115,16 +125,21 @@ export default function Game() {
     };
   });
 
+  // State for the currently selected shop tab.
   const [shopTab, setShopTab] = useState<'archetypes' | 'gadgets' | 'items'>('archetypes');
 
+  // A ref to the game state is used to provide the most up-to-date state to the game loop.
   const stateRef = useRef<GameState>(gameState);
   useEffect(() => {
     stateRef.current = gameState;
   }, [gameState]);
 
+  // Refs for managing the game loop timing.
   const lastTimeRef = useRef<number>(0);
   const requestRef = useRef<number>(0);
 
+  // --- Canvas Resizing ---
+  // This effect uses a ResizeObserver to keep the canvas dimensions in sync with its container.
   useEffect(() => {
     if (!containerRef.current) return;
 
@@ -144,6 +159,7 @@ export default function Game() {
   }, []);
 
   // --- Input Handling ---
+  // This effect sets up and tears down event listeners for keyboard and mouse input.
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       stateRef.current.keys[e.key.toLowerCase()] = true;
@@ -164,12 +180,35 @@ export default function Game() {
     };
     const handleMouseMove = (e: MouseEvent) => {
       if (!canvasRef.current) return;
-      const rect = canvasRef.current.getBoundingClientRect();
-      const scaleX = canvasRef.current.width / rect.width;
-      const scaleY = canvasRef.current.height / rect.height;
+
+      const canvas = canvasRef.current;
+      const rect = canvas.getBoundingClientRect();
+
+      const canvasAspect = canvas.width / canvas.height;
+      const containerAspect = rect.width / rect.height;
+
+      let scale: number;
+      let offsetX = 0;
+      let offsetY = 0;
+
+      if (containerAspect > canvasAspect) {
+        // Pillarboxed (bars on sides)
+        scale = rect.height / canvas.height;
+        const renderedWidth = canvas.width * scale;
+        offsetX = (rect.width - renderedWidth) / 2;
+      } else {
+        // Letterboxed (bars on top/bottom)
+        scale = rect.width / canvas.width;
+        const renderedHeight = canvas.height * scale;
+        offsetY = (rect.height - renderedHeight) / 2;
+      }
+
+      const mouseX = e.clientX - rect.left - offsetX;
+      const mouseY = e.clientY - rect.top - offsetY;
+
       stateRef.current.mousePos = {
-        x: (e.clientX - rect.left) * scaleX,
-        y: (e.clientY - rect.top) * scaleY,
+        x: mouseX / scale,
+        y: mouseY / scale,
       };
     };
 
@@ -190,22 +229,27 @@ export default function Game() {
     };
   }, []);
 
+  // --- Game Loop ---
+  // This effect manages the main game loop using requestAnimationFrame for smooth animation.
   useEffect(() => {
+    // The update function advances the game logic.
     const update = (dt: number) => {
       updateLogic(stateRef.current, dt);
       setGameState({ ...stateRef.current });
     };
 
+    // The draw function renders the game state to the canvas.
     const draw = (ctx: CanvasRenderingContext2D) => {
       drawGame(stateRef.current, ctx);
     };
 
+    // The main loop function, called on each frame.
     const loop = (time: number) => {
       if (!lastTimeRef.current) lastTimeRef.current = time;
       const dt = (time - lastTimeRef.current) / 1000;
       lastTimeRef.current = time;
 
-      // Cap dt to prevent huge jumps if tab is inactive
+      // Cap dt to prevent large jumps in game logic if the tab is inactive.
       const cappedDt = Math.min(dt, 0.1);
 
       update(cappedDt);
@@ -224,11 +268,16 @@ export default function Game() {
     return () => cancelAnimationFrame(requestRef.current);
   }, []);
 
+  // --- Game State Transitions ---
+
+  /**
+   * Starts the next level of the game.
+   */
   const startNextLevel = () => {
     setGameState(prev => {
       const newHeroPos = { x: prev.canvasWidth / 2, y: prev.canvasHeight / 2 };
       
-      // Move charmed/friendly monsters near the hero
+      // Move charmed/friendly monsters near the hero.
       const newMonsters = prev.monsters.map(m => {
         if (m.isCharmed || m.isFriendly) {
           return {
@@ -251,7 +300,7 @@ export default function Game() {
         spawnInterval: getSpawnInterval(prev.level),
         newAbilityMessage: null,
         projectiles: [],
-        // Reset hero position to center
+        // Reset hero position to the center.
         hero: {
           ...prev.hero,
           pos: newHeroPos,
@@ -260,6 +309,9 @@ export default function Game() {
     });
   };
 
+  /**
+   * Restarts the game from the beginning.
+   */
   const restartGame = () => {
     setGameState(prev => ({
       status: 'playing',
@@ -298,22 +350,37 @@ export default function Game() {
     }));
   };
 
+  /**
+   * Starts the game from the main menu.
+   */
   const startGame = () => {
     setGameState(prev => ({ ...prev, status: 'playing' }));
   };
 
+  /**
+   * Pauses the game.
+   */
   const pauseGame = () => {
     setGameState(prev => ({ ...prev, status: 'paused' }));
   };
 
+  /**
+   * Resumes the game from a paused state.
+   */
   const resumeGame = () => {
     setGameState(prev => ({ ...prev, status: 'playing' }));
   };
 
+  /**
+   * Navigates to the shop screen.
+   */
   const goToShop = () => {
     setGameState(prev => ({ ...prev, status: 'shop' }));
   };
 
+  /**
+   * Returns to the main menu.
+   */
   const goToMainMenu = () => {
     setGameState(prev => ({
       status: 'start',
@@ -352,6 +419,9 @@ export default function Game() {
     }));
   };
 
+  // --- Rendering ---
+  
+  // Do not render the component until it is mounted on the client-side.
   if (!isMounted) {
     return null;
   }
@@ -359,11 +429,13 @@ export default function Game() {
   return (
     <div className="flex flex-row items-start justify-center h-screen bg-neutral-950 text-neutral-100 font-sans selection:bg-blue-500/30 overflow-hidden p-4 gap-4">
       
+      {/* Left sidebar with top HUD and dev panel */}
       <div className="flex flex-col gap-4 w-64 shrink-0 h-full overflow-y-auto custom-scrollbar pr-2">
         <TopHUD gameState={gameState} pauseGame={pauseGame} />
         <DevPanel gameState={gameState} setGameState={setGameState} />
       </div>
 
+      {/* Main game area with canvas and UI overlays */}
       <div ref={containerRef} className="relative flex-1 h-full max-w-6xl rounded-xl overflow-hidden shadow-2xl shadow-blue-900/20 ring-1 ring-white/10 flex flex-col justify-center">
         <canvas
           ref={canvasRef}
@@ -372,6 +444,7 @@ export default function Game() {
           className="block cursor-crosshair w-full h-full object-contain"
         />
 
+        {/* Animated UI overlays for different game states */}
         <AnimatePresence>
           {gameState.status === 'start' && (
             <StartScreen gameState={gameState} startGame={startGame} />
@@ -399,6 +472,7 @@ export default function Game() {
         </AnimatePresence>
       </div>
       
+      {/* Right sidebar with bottom HUD */}
       <div className="flex flex-col gap-4 w-64 shrink-0 h-full overflow-y-auto custom-scrollbar pl-2">
         <BottomHUD gameState={gameState} />
       </div>

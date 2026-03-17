@@ -1,3 +1,4 @@
+
 import { GameState, Projectile, Monster, MoneyDrop } from '../types';
 import { getId } from '../utils/id';
 import { applyLevelUp } from './levelUp';
@@ -124,7 +125,7 @@ export const update = (state: GameState, dt: number) => {
           if (mouseDown.right && hero.mana >= 15) {
             hero.lastAttackTime = now;
             hero.mana -= 15;
-            const moveAngle = (dx !== 0 || dy !== 0) ? Math.atan2(dy, dx) : angleToMouse;
+            const moveAngle = angleToMouse;
             const angles = [moveAngle, moveAngle + Math.PI];
             
             for (const baseAngle of angles) {
@@ -330,7 +331,7 @@ export const update = (state: GameState, dt: number) => {
       } else if (archetype === 'teleporter') {
         // Update cooldowns
         if (teleporterAbilities.boomerangTimer > 0) teleporterAbilities.boomerangTimer -= dt;
-        if (teleporterAbilities.blackHoleTimer > 0) teleporterAbilities.blackHoleTimer -= dt;
+        if (teleporterAbilities.blackHoleTimer > 0) teleporterAbilities.blackHleTimer -= dt;
         if (teleporterAbilities.dimensionDoorTimer > 0) teleporterAbilities.dimensionDoorTimer -= dt;
         if (teleporterAbilities.teleportAllyTimer > 0) teleporterAbilities.teleportAllyTimer -= dt;
 
@@ -525,103 +526,105 @@ export const update = (state: GameState, dt: number) => {
       }
 
       // 4. Spawn Monsters
-      state.spawnTimer += dt;
-      if (state.monstersToSpawn > 0 && state.spawnTimer >= state.spawnInterval) {
-        state.spawnTimer = 0;
-        state.monstersToSpawn--;
+      if (!state.devSettings.enabled) {
+        state.spawnTimer += dt;
+        if (state.monstersToSpawn > 0 && state.spawnTimer >= state.spawnInterval) {
+          state.spawnTimer = 0;
+          state.monstersToSpawn--;
 
-        // Spawn at edges
-        let x, y;
-        if (Math.random() < 0.5) {
-          x = Math.random() < 0.5 ? -20 : state.canvasWidth + 20;
-          y = Math.random() * state.canvasHeight;
-        } else {
-          x = Math.random() * state.canvasWidth;
-          y = Math.random() < 0.5 ? -20 : state.canvasHeight + 20;
-        }
-
-        if (state.level === 5 && state.monstersToSpawn === 0) {
-          // Spawn Boss
-          state.monsters.push({
-            id: getId(),
-            pos: { x: state.canvasWidth / 2, y: -50 },
-            radius: 30,
-            speed: 40,
-            hp: 1500,
-            maxHp: 1500,
-            damage: 30,
-            color: '#4c1d95', // Deep purple
-            isBoss: true,
-            attackTimer: 0,
-          });
-          state.bossMessageTimer = 5;
-        } else {
-          const rand = Math.random();
-          let type: 'normal' | 'swarm' | 'tank' | 'ranged' = 'normal';
-          
-          if (state.level >= 2 && rand < 0.2) {
-            type = 'swarm';
-          } else if (state.level >= 3 && rand < 0.35) {
-            type = 'tank';
-          } else if (state.level >= 4 && rand < 0.5) {
-            type = 'ranged';
-          }
-
-          let hp = 20 + state.level * 10;
-          let speed = 50 + state.level * 5;
-          let radius = 12 + Math.random() * 5;
-          let damage = 10 + state.level * 2;
-          let color = '#ef4444'; // Default red
-
-          if (type === 'swarm') {
-            hp = hp * 0.4;
-            speed = speed * 1.5;
-            radius = 8;
-            damage = damage * 0.5;
-            color = '#facc15'; // Yellow
-          } else if (type === 'tank') {
-            hp = hp * 3;
-            speed = speed * 0.5;
-            radius = 20;
-            damage = damage * 1.5;
-            color = '#475569'; // Slate
-          } else if (type === 'ranged') {
-            hp = hp * 0.8;
-            speed = speed * 0.8;
-            color = '#10b981'; // Emerald
+          // Spawn at edges
+          let x, y;
+          if (Math.random() < 0.5) {
+            x = Math.random() < 0.5 ? -20 : state.canvasWidth + 20;
+            y = Math.random() * state.canvasHeight;
           } else {
-            const colors = ['#ef4444', '#f97316', '#8b5cf6', '#ec4899'];
-            color = colors[(state.level - 1) % colors.length];
+            x = Math.random() * state.canvasWidth;
+            y = Math.random() < 0.5 ? -20 : state.canvasHeight + 20;
           }
 
-          state.monsters.push({
-            id: getId(),
-            pos: { x, y },
-            radius,
-            speed,
-            hp,
-            maxHp: hp,
-            damage,
-            color,
-            type,
-            attackTimer: 0,
-          });
-          
-          if (type === 'swarm') {
-            // Spawn a few more nearby
-            for(let i=0; i<3; i++) {
-              state.monsters.push({
-                id: getId(),
-                pos: { x: x + (Math.random() - 0.5) * 40, y: y + (Math.random() - 0.5) * 40 },
-                radius,
-                speed,
-                hp,
-                maxHp: hp,
-                damage,
-                color,
-                type,
-                attackTimer: 0,
-              });
+          if (state.level === 5 && state.monstersToSpawn === 0) {
+            // Spawn Boss
+            state.monsters.push({
+              id: getId(),
+              pos: { x: state.canvasWidth / 2, y: -50 },
+              radius: 30,
+              speed: 40,
+              hp: 1500,
+              maxHp: 1500,
+              damage: 30,
+              color: '#4c1d95', // Deep purple
+              isBoss: true,
+              attackTimer: 0,
+            });
+            state.bossMessageTimer = 5;
+          } else {
+            const rand = Math.random();
+            let type: 'normal' | 'swarm' | 'tank' | 'ranged' = 'normal';
+            
+            if (state.level >= 2 && rand < 0.2) {
+              type = 'swarm';
+            } else if (state.level >= 3 && rand < 0.35) {
+              type = 'tank';
+            } else if (state.level >= 4 && rand < 0.5) {
+              type = 'ranged';
+            }
+
+            let hp = 20 + state.level * 10;
+            let speed = 50 + state.level * 5;
+            let radius = 12 + Math.random() * 5;
+            let damage = 10 + state.level * 2;
+            let color = '#ef4444'; // Default red
+
+            if (type === 'swarm') {
+              hp = hp * 0.4;
+              speed = speed * 1.5;
+              radius = 8;
+              damage = damage * 0.5;
+              color = '#facc15'; // Yellow
+            } else if (type === 'tank') {
+              hp = hp * 3;
+              speed = speed * 0.5;
+              radius = 20;
+              damage = damage * 1.5;
+              color = '#475569'; // Slate
+            } else if (type === 'ranged') {
+              hp = hp * 0.8;
+              speed = speed * 0.8;
+              color = '#10b981'; // Emerald
+            } else {
+              const colors = ['#ef4444', '#f97316', '#8b5cf6', '#ec4899'];
+              color = colors[(state.level - 1) % colors.length];
+            }
+
+            state.monsters.push({
+              id: getId(),
+              pos: { x, y },
+              radius,
+              speed,
+              hp,
+              maxHp: hp,
+              damage,
+              color,
+              type,
+              attackTimer: 0,
+            });
+            
+            if (type === 'swarm') {
+              // Spawn a few more nearby
+              for(let i=0; i<3; i++) {
+                state.monsters.push({
+                  id: getId(),
+                  pos: { x: x + (Math.random() - 0.5) * 40, y: y + (Math.random() - 0.5) * 40 },
+                  radius,
+                  speed,
+                  hp,
+                  maxHp: hp,
+                  damage,
+                  color,
+                  type,
+                  attackTimer: 0,
+                });
+              }
             }
           }
         }
@@ -1026,12 +1029,25 @@ export const update = (state: GameState, dt: number) => {
 
           if (dist < minDist) {
             const overlap = minDist - dist;
-            const pushX = (dx / dist) * overlap * 0.5;
-            const pushY = (dy / dist) * overlap * 0.5;
-            m1.pos.x -= pushX;
-            m1.pos.y -= pushY;
-            m2.pos.x += pushX;
-            m2.pos.y += pushY;
+            const pushX = (dx / dist) * overlap;
+            const pushY = (dy / dist) * overlap;
+            if (m1.isInert && m2.isInert) {
+              // Both are inert, do nothing
+            } else if (m1.isInert) {
+              // m1 is inert, push m2 away fully
+              m2.pos.x += pushX;
+              m2.pos.y += pushY;
+            } else if (m2.isInert) {
+              // m2 is inert, push m1 away fully
+              m1.pos.x -= pushX;
+              m1.pos.y -= pushY;
+            } else {
+              // Neither is inert, push both half way
+              m1.pos.x -= pushX * 0.5;
+              m1.pos.y -= pushY * 0.5;
+              m2.pos.x += pushX * 0.5;
+              m2.pos.y += pushY * 0.5;
+            }
           }
         }
         
@@ -1049,14 +1065,19 @@ export const update = (state: GameState, dt: number) => {
 
         if (dist < minDist) {
           const overlap = minDist - dist;
-          // Push both equally
-          const pushX = (dx / dist) * overlap * 0.5;
-          const pushY = (dy / dist) * overlap * 0.5;
-          
-          hero.pos.x += pushX;
-          hero.pos.y += pushY;
-          m1.pos.x -= pushX;
-          m1.pos.y -= pushY;
+          const pushX = (dx / dist) * overlap;
+          const pushY = (dy / dist) * overlap;
+          if (m1.isInert) {
+            // Monster is inert, only push hero
+            hero.pos.x += pushX;
+            hero.pos.y += pushY;
+          } else {
+            // Otherwise push both
+            hero.pos.x += pushX * 0.5;
+            hero.pos.y += pushY * 0.5;
+            m1.pos.x -= pushX * 0.5;
+            m1.pos.y -= pushY * 0.5;
+          }
         }
 
         // Clamp monster to screen
@@ -1167,5 +1188,3 @@ export const update = (state: GameState, dt: number) => {
       // Force re-render by creating a new state object reference
       
     };
-
-    
