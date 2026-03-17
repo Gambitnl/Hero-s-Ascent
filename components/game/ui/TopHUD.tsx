@@ -8,7 +8,7 @@ interface TopHUDProps {
 
 export function TopHUD({ gameState, pauseGame }: TopHUDProps) {
   return (
-    <div className="mb-6 shrink-0">
+    <div className="shrink-0 w-full">
       <h1 className="text-2xl font-bold tracking-tight text-white mb-4">Hero&apos;s Ascent</h1>
       <div className="flex flex-col gap-3 text-sm text-neutral-400 font-mono">
         <div className="flex justify-between"><span>Level:</span> <span className="text-white">{gameState.level}</span></div>

@@ -684,10 +684,11 @@ export const update = (state: GameState, dt: number) => {
         const dist = Math.sqrt(dx * dx + dy * dy);
         
         // Ally specific logic
+        const currentSpeed = m.isInert ? 0 : m.speed;
         if (m.isFriendly) {
           if (m.allyType === 'Arcane Turret') {
             m.attackTimer = (m.attackTimer || 0) + dt;
-            if (m.attackTimer >= 1) {
+            if (m.attackTimer >= 1 && !m.isStopAttacking) {
               m.attackTimer = 0;
               if (dist > 0 && dist < 400 && targetPos !== hero.pos) {
                 const angle = Math.atan2(dy, dx);
@@ -706,7 +707,7 @@ export const update = (state: GameState, dt: number) => {
             }
           } else if (m.allyType === 'Light Spirit') {
             m.attackTimer = (m.attackTimer || 0) + dt;
-            if (m.attackTimer >= 1) {
+            if (m.attackTimer >= 1 && !m.isStopAttacking) {
               m.attackTimer = 0;
               const heroDist = Math.sqrt((hero.pos.x - m.pos.x) ** 2 + (hero.pos.y - m.pos.y) ** 2);
               if (heroDist < 150) {
@@ -721,15 +722,15 @@ export const update = (state: GameState, dt: number) => {
               }
             }
             if (dist > 50) {
-              m.pos.x += (dx / dist) * m.speed * dt;
-              m.pos.y += (dy / dist) * m.speed * dt;
+              m.pos.x += (dx / dist) * currentSpeed * dt;
+              m.pos.y += (dy / dist) * currentSpeed * dt;
             }
           } else if (m.allyType === 'Void Fiend') {
             if (dist > 0 && targetPos !== hero.pos) {
-              m.pos.x += (dx / dist) * m.speed * dt;
-              m.pos.y += (dy / dist) * m.speed * dt;
+              m.pos.x += (dx / dist) * currentSpeed * dt;
+              m.pos.y += (dy / dist) * currentSpeed * dt;
             }
-            if (dist < m.radius + 20 && targetPos !== hero.pos) {
+            if (dist < m.radius + 20 && targetPos !== hero.pos && !m.isStopAttacking) {
               // Explode
               state.effects.push({
                 id: getId(),
@@ -756,27 +757,27 @@ export const update = (state: GameState, dt: number) => {
               m.hp = 0; // Kill self
             }
           } else if (dist > 0 && targetPos !== hero.pos) {
-            m.pos.x += (dx / dist) * m.speed * dt;
-            m.pos.y += (dy / dist) * m.speed * dt;
+            m.pos.x += (dx / dist) * currentSpeed * dt;
+            m.pos.y += (dy / dist) * currentSpeed * dt;
           } else if (dist > 100 && targetPos === hero.pos) {
             // Follow hero if no enemies
-            m.pos.x += (dx / dist) * m.speed * dt;
-            m.pos.y += (dy / dist) * m.speed * dt;
+            m.pos.x += (dx / dist) * currentSpeed * dt;
+            m.pos.y += (dy / dist) * currentSpeed * dt;
           }
         } else if (m.type === 'ranged') {
           // Ranged monsters try to stay at a distance
           if (dist > 200) {
-            m.pos.x += (dx / dist) * m.speed * dt;
-            m.pos.y += (dy / dist) * m.speed * dt;
+            m.pos.x += (dx / dist) * currentSpeed * dt;
+            m.pos.y += (dy / dist) * currentSpeed * dt;
           } else if (dist < 150) {
             // Back away
-            m.pos.x -= (dx / dist) * m.speed * dt;
-            m.pos.y -= (dy / dist) * m.speed * dt;
+            m.pos.x -= (dx / dist) * currentSpeed * dt;
+            m.pos.y -= (dy / dist) * currentSpeed * dt;
           }
           
           // Attack
           m.attackTimer = (m.attackTimer || 0) + dt;
-          if (m.attackTimer >= 2) {
+          if (m.attackTimer >= 2 && !m.isStopAttacking) {
             m.attackTimer = 0;
             
             let attackTargetPos = hero.pos;
@@ -820,12 +821,12 @@ export const update = (state: GameState, dt: number) => {
             });
           }
         } else if (dist > 0) {
-          m.pos.x += (dx / dist) * m.speed * dt;
-          m.pos.y += (dy / dist) * m.speed * dt;
+          m.pos.x += (dx / dist) * currentSpeed * dt;
+          m.pos.y += (dy / dist) * currentSpeed * dt;
         }
 
         // Hero collision
-        if (dist < hero.radius + m.radius && !m.isCharmed && !m.isFriendly) {
+        if (dist < hero.radius + m.radius && !m.isCharmed && !m.isFriendly && !m.isStopAttacking) {
           if ((state.archetype !== 'barbarian' || !state.barbarianAbilities.isDashing) && state.invulnerabilityTimer <= 0) {
             const dmg = Math.max(1, m.damage - hero.armor) * dt;
             hero.hp -= dmg; // Continuous damage while touching
@@ -850,7 +851,7 @@ export const update = (state: GameState, dt: number) => {
         // Boss special attacks
         if (m.isBoss) {
           m.attackTimer = (m.attackTimer || 0) + dt;
-          if (m.attackTimer > 3) {
+          if (m.attackTimer > 3 && !m.isStopAttacking) {
             m.attackTimer = 0;
             // Shoot projectiles in a circle
             const projSpeed = 150;
@@ -951,7 +952,7 @@ export const update = (state: GameState, dt: number) => {
         }
 
         // Charmed/Friendly monster damage to others
-        if (m.isCharmed || m.isFriendly) {
+        if ((m.isCharmed || m.isFriendly) && !m.isStopAttacking) {
           for (const other of state.monsters) {
             if (other.id === m.id || other.isCharmed || other.isFriendly) continue;
             const odx = other.pos.x - m.pos.x;
@@ -972,6 +973,10 @@ export const update = (state: GameState, dt: number) => {
               }
             }
           }
+        }
+
+        if (m.isImmune) {
+          m.hp = m.maxHp;
         }
 
         // Check if monster died

@@ -23,7 +23,8 @@ import {
   PauseScreen,
   ShopScreen,
   TopHUD,
-  BottomHUD
+  BottomHUD,
+  DevPanel
 } from './game/ui';
 
 
@@ -105,6 +106,12 @@ export default function Game() {
       bossMessageTimer: 0,
       canvasWidth: 800,
       canvasHeight: 600,
+      devSettings: {
+        enabled: false,
+        spawnInert: false,
+        spawnImmune: false,
+        spawnStopAttacking: false,
+      },
     };
   });
 
@@ -287,6 +294,7 @@ export default function Game() {
       bossMessageTimer: 0,
       canvasWidth: prev.canvasWidth,
       canvasHeight: prev.canvasHeight,
+      devSettings: prev.devSettings,
     }));
   };
 
@@ -340,6 +348,7 @@ export default function Game() {
       bossMessageTimer: 0,
       canvasWidth: prev.canvasWidth,
       canvasHeight: prev.canvasHeight,
+      devSettings: prev.devSettings,
     }));
   };
 
@@ -348,16 +357,19 @@ export default function Game() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-neutral-950 text-neutral-100 font-sans selection:bg-blue-500/30 overflow-hidden">
+    <div className="flex flex-row items-start justify-center h-screen bg-neutral-950 text-neutral-100 font-sans selection:bg-blue-500/30 overflow-hidden p-4 gap-4">
       
-      <TopHUD gameState={gameState} pauseGame={pauseGame} />
+      <div className="flex flex-col gap-4 w-64 shrink-0 h-full overflow-y-auto custom-scrollbar pr-2">
+        <TopHUD gameState={gameState} pauseGame={pauseGame} />
+        <DevPanel gameState={gameState} setGameState={setGameState} />
+      </div>
 
-      <div ref={containerRef} className="relative flex-1 w-full max-w-6xl mb-4 rounded-xl overflow-hidden shadow-2xl shadow-blue-900/20 ring-1 ring-white/10">
+      <div ref={containerRef} className="relative flex-1 h-full max-w-6xl rounded-xl overflow-hidden shadow-2xl shadow-blue-900/20 ring-1 ring-white/10 flex flex-col justify-center">
         <canvas
           ref={canvasRef}
           width={gameState.canvasWidth}
           height={gameState.canvasHeight}
-          className="block cursor-crosshair w-full h-full"
+          className="block cursor-crosshair w-full h-full object-contain"
         />
 
         <AnimatePresence>
@@ -387,7 +399,9 @@ export default function Game() {
         </AnimatePresence>
       </div>
       
-      <BottomHUD gameState={gameState} />
+      <div className="flex flex-col gap-4 w-64 shrink-0 h-full overflow-y-auto custom-scrollbar pl-2">
+        <BottomHUD gameState={gameState} />
+      </div>
     </div>
   );
 }

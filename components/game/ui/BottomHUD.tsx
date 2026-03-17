@@ -7,7 +7,7 @@ interface BottomHUDProps {
 
 export function BottomHUD({ gameState }: BottomHUDProps) {
   return (
-    <div className={`mt-8 grid gap-4 text-sm text-neutral-500 w-full max-w-[800px] px-4 ${gameState.archetype === 'archer' ? 'grid-cols-5' : 'grid-cols-4'}`}>
+    <div className="flex flex-col gap-4 text-sm text-neutral-500 w-full">
       {gameState.archetype === 'archer' ? (
         <>
           <div className="bg-neutral-900/50 p-3 rounded border border-neutral-800 relative overflow-hidden">

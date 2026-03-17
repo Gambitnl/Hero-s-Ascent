@@ -6,3 +6,4 @@ export * from './PauseScreen';
 export * from './ShopScreen';
 export * from './TopHUD';
 export * from './BottomHUD';
+export * from './DevPanel';

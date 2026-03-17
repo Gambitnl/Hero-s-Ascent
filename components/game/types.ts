@@ -48,11 +48,14 @@ export interface Monster {
   isBoss?: boolean;
   isCharmed?: boolean;
   charmedTimer?: number;
-  type?: 'normal' | 'swarm' | 'tank' | 'ranged';
+  type?: 'normal' | 'swarm' | 'tank' | 'ranged' | 'boss';
   attackTimer?: number;
   isFriendly?: boolean;
   allyType?: string;
   expireTimer?: number;
+  isInert?: boolean;
+  isImmune?: boolean;
+  isStopAttacking?: boolean;
 }
 
 export interface Abilities {
@@ -164,6 +167,13 @@ export interface DamageText {
   color: string;
 }
 
+export interface DevSettings {
+  enabled: boolean;
+  spawnInert: boolean;
+  spawnImmune: boolean;
+  spawnStopAttacking: boolean;
+}
+
 export interface GameState {
   status: 'start' | 'playing' | 'level_complete' | 'game_over' | 'paused' | 'shop' | 'level_up';
   level: number;
@@ -197,4 +207,5 @@ export interface GameState {
   bossMessageTimer: number;
   canvasWidth: number;
   canvasHeight: number;
+  devSettings: DevSettings;
 }
