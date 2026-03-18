@@ -12,7 +12,7 @@ export * from './PauseScreen';
 export * from './ShopScreen';
 // Export the TopHUD component, the heads-up display at the top of the screen.
 export * from './TopHUD';
-// Export the BottomHUD component, the heads-up display at the bottom of the screen.
-export * from './BottomHUD';
+// Export the AbilitiesHUD component, the heads-up display showing character abilities.
+export * from './AbilitiesHUD';
 // Export the DevPanel component, a panel with developer tools for debugging.
 export * from './DevPanel';

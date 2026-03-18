@@ -12,9 +12,9 @@ import { update as updateLogic } from './game/logic/update';
 import { draw as drawGame } from './game/logic/draw';
 import { getId } from './game/utils/id';
 import { applyLevelUp } from './game/logic/levelUp';
-import { 
+import {
   INITIAL_ABILITIES, INITIAL_GADGETS, INITIAL_INVENTORY, INITIAL_BARBARIAN_ABILITIES, INITIAL_TELEPORTER_ABILITIES,
-  createInitialHero, getLevelMonsters, getSpawnInterval 
+  INITIAL_KING_ABILITIES, createInitialHero, getLevelMonsters, getSpawnInterval
 } from './game/constants';
 import {
   StartScreen,
@@ -24,7 +24,7 @@ import {
   PauseScreen,
   ShopScreen,
   TopHUD,
-  BottomHUD,
+  AbilitiesHUD,
   DevPanel
 } from './game/ui';
 
@@ -96,6 +96,7 @@ export default function Game() {
       abilities: { ...INITIAL_ABILITIES },
       barbarianAbilities: { ...INITIAL_BARBARIAN_ABILITIES },
       teleporterAbilities: { ...INITIAL_TELEPORTER_ABILITIES },
+      kingAbilities: { ...INITIAL_KING_ABILITIES },
       rupturePaths: [],
       effects: [],
       damageTexts: [],
@@ -118,6 +119,7 @@ export default function Game() {
       canvasHeight: 600,
       devSettings: {
         enabled: false,
+        godMode: false,
         spawnInert: false,
         spawnImmune: false,
         spawnStopAttacking: false,
@@ -326,6 +328,7 @@ export default function Game() {
       abilities: { ...INITIAL_ABILITIES },
       barbarianAbilities: { ...INITIAL_BARBARIAN_ABILITIES },
       teleporterAbilities: { ...INITIAL_TELEPORTER_ABILITIES },
+      kingAbilities: { ...INITIAL_KING_ABILITIES },
       rupturePaths: [],
       effects: [],
       damageTexts: [],
@@ -395,6 +398,7 @@ export default function Game() {
       abilities: { ...INITIAL_ABILITIES },
       barbarianAbilities: { ...INITIAL_BARBARIAN_ABILITIES },
       teleporterAbilities: { ...INITIAL_TELEPORTER_ABILITIES },
+      kingAbilities: { ...INITIAL_KING_ABILITIES },
       rupturePaths: [],
       effects: [],
       damageTexts: [],
@@ -472,9 +476,9 @@ export default function Game() {
         </AnimatePresence>
       </div>
       
-      {/* Right sidebar with bottom HUD */}
+      {/* Right sidebar with abilities HUD */}
       <div className="flex flex-col gap-4 w-64 shrink-0 h-full overflow-y-auto custom-scrollbar pl-2">
-        <BottomHUD gameState={gameState} />
+        <AbilitiesHUD gameState={gameState} />
       </div>
     </div>
   );

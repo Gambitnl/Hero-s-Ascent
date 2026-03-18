@@ -54,6 +54,54 @@ export const draw = (state: GameState, ctx: CanvasRenderingContext2D) => {
       ctx.beginPath();
       ctx.arc(effect.pos.x, effect.pos.y, 15, 0, Math.PI * 2);
       ctx.fill();
+    } else if (effect.type === 'royalCross' && effect.angle !== undefined && effect.radius !== undefined) {
+      const angle = effect.angle;
+      const len = effect.radius;
+      const cx = effect.pos.x;
+      const cy = effect.pos.y;
+      const endX = cx + Math.cos(angle) * len;
+      const endY = cy + Math.sin(angle) * len;
+      const crossCx = cx + Math.cos(angle) * len * 0.6;
+      const crossCy = cy + Math.sin(angle) * len * 0.6;
+      const perpAngle = angle + Math.PI / 2;
+      const crossHalfLen = len * 0.4;
+
+      // Outer glow
+      ctx.strokeStyle = `rgba(251, 191, 36, ${alpha * 0.5})`;
+      ctx.lineWidth = 20;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(endX, endY);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(crossCx - Math.cos(perpAngle) * crossHalfLen, crossCy - Math.sin(perpAngle) * crossHalfLen);
+      ctx.lineTo(crossCx + Math.cos(perpAngle) * crossHalfLen, crossCy + Math.sin(perpAngle) * crossHalfLen);
+      ctx.stroke();
+
+      // Main gold arm
+      ctx.strokeStyle = `rgba(251, 191, 36, ${alpha})`;
+      ctx.lineWidth = 10;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(endX, endY);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(crossCx - Math.cos(perpAngle) * crossHalfLen, crossCy - Math.sin(perpAngle) * crossHalfLen);
+      ctx.lineTo(crossCx + Math.cos(perpAngle) * crossHalfLen, crossCy + Math.sin(perpAngle) * crossHalfLen);
+      ctx.stroke();
+
+      // White inner core
+      ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.8})`;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(endX, endY);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(crossCx - Math.cos(perpAngle) * crossHalfLen, crossCy - Math.sin(perpAngle) * crossHalfLen);
+      ctx.lineTo(crossCx + Math.cos(perpAngle) * crossHalfLen, crossCy + Math.sin(perpAngle) * crossHalfLen);
+      ctx.stroke();
     } else if (effect.type === 'blackHole' && effect.radius !== undefined) {
       // Draw black hole
       ctx.beginPath();
@@ -115,6 +163,20 @@ export const draw = (state: GameState, ctx: CanvasRenderingContext2D) => {
       ctx.moveTo(proj.pos.x, proj.pos.y);
       ctx.lineTo(proj.pos.x - proj.vel.x * 0.05, proj.pos.y - proj.vel.y * 0.05);
       ctx.stroke();
+    } else if (proj.isCannonball) {
+      // Gold cannonball with dark core
+      ctx.fillStyle = '#b45309';
+      ctx.fill();
+      ctx.strokeStyle = '#fcd34d';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(proj.pos.x, proj.pos.y, proj.radius * 0.4, 0, Math.PI * 2);
+      ctx.fillStyle = '#78350f';
+      ctx.fill();
+    } else if (proj.isShrapnel) {
+      ctx.fillStyle = '#fbbf24'; // Amber shrapnel
+      ctx.fill();
     } else {
       ctx.fillStyle = '#ffffff';
       ctx.fill();
@@ -125,12 +187,18 @@ export const draw = (state: GameState, ctx: CanvasRenderingContext2D) => {
   for (const m of state.monsters) {
     if (m.isFriendly) {
       switch (m.allyType) {
-        case 'Gargantua': ctx.fillStyle = '#78716c'; break; // Stone
-        case 'Shadow Weaver': ctx.fillStyle = '#4c1d95'; break; // Dark purple
-        case 'Arcane Turret': ctx.fillStyle = '#0ea5e9'; break; // Light blue
-        case 'Light Spirit': ctx.fillStyle = '#fef08a'; break; // Yellow
-        case 'Void Fiend': ctx.fillStyle = '#1e1b4b'; break; // Very dark purple
-        default: ctx.fillStyle = '#a855f7'; // Purple default
+        case 'Gargantua': ctx.fillStyle = '#78716c'; break;
+        case 'Shadow Weaver': ctx.fillStyle = '#4c1d95'; break;
+        case 'Arcane Turret': ctx.fillStyle = '#0ea5e9'; break;
+        case 'Light Spirit': ctx.fillStyle = '#fef08a'; break;
+        case 'Void Fiend': ctx.fillStyle = '#1e1b4b'; break;
+        // Chess pieces
+        case 'Pawn':   ctx.fillStyle = '#9ca3af'; break;
+        case 'Knight': ctx.fillStyle = '#92400e'; break;
+        case 'Rook':   ctx.fillStyle = '#4b5563'; break;
+        case 'Bishop': ctx.fillStyle = '#fbbf24'; break;
+        case 'Queen':  ctx.fillStyle = '#a855f7'; break;
+        default: ctx.fillStyle = '#a855f7';
       }
     } else {
       ctx.fillStyle = m.isCharmed ? '#ec4899' : m.color;
@@ -153,16 +221,43 @@ export const draw = (state: GameState, ctx: CanvasRenderingContext2D) => {
     ctx.fillStyle = '#22c55e';
     ctx.fillRect(m.pos.x - m.radius, m.pos.y - m.radius - 10, m.radius * 2 * hpPercent, 4);
 
-    // Draw ally name
+    // Draw ally label
     if (m.isFriendly && m.allyType) {
       ctx.fillStyle = '#ffffff';
-      ctx.font = '10px sans-serif';
+      ctx.font = 'bold 10px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(m.allyType, m.pos.x, m.pos.y + m.radius + 12);
+      // Chess pieces show single letter inside circle
+      const chessLabels: Record<string, string> = { Pawn: 'P', Knight: 'N', Rook: 'R', Bishop: 'B', Queen: 'Q' };
+      if (chessLabels[m.allyType]) {
+        ctx.fillText(chessLabels[m.allyType], m.pos.x, m.pos.y + 4);
+      } else {
+        ctx.fillText(m.allyType, m.pos.x, m.pos.y + m.radius + 12);
+      }
     }
   }
-  // Draw Aiming Line
-  if (state.status === 'playing' && state.archetype === 'archer') {
+
+  // Draw crown above king hero
+  if (state.archetype === 'king') {
+    const hx = state.hero.pos.x;
+    const hy = state.hero.pos.y - state.hero.radius - 10;
+    ctx.fillStyle = '#fcd34d';
+    ctx.beginPath();
+    // Simple crown: 3 points
+    ctx.moveTo(hx - 8, hy + 6);
+    ctx.lineTo(hx - 8, hy - 2);
+    ctx.lineTo(hx - 4, hy + 2);
+    ctx.lineTo(hx, hy - 6);
+    ctx.lineTo(hx + 4, hy + 2);
+    ctx.lineTo(hx + 8, hy - 2);
+    ctx.lineTo(hx + 8, hy + 6);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = '#b45309';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+  // Draw Aiming Line (archer and king)
+  if (state.status === 'playing' && (state.archetype === 'archer' || state.archetype === 'king')) {
     ctx.beginPath();
     ctx.moveTo(state.hero.pos.x, state.hero.pos.y);
     ctx.lineTo(state.mousePos.x, state.mousePos.y);
@@ -171,10 +266,41 @@ export const draw = (state: GameState, ctx: CanvasRenderingContext2D) => {
     ctx.stroke();
   }
 
+  // Draw Ultra Spin scepter (king)
+  if (state.archetype === 'king' && state.kingAbilities.ultraSpinActiveTimer > 0) {
+    const spinAngle = state.kingAbilities.ultraSpinAngle;
+    const spinRadius = state.kingAbilities.ultraSpinRadius;
+    const tipX = state.hero.pos.x + Math.cos(spinAngle) * spinRadius;
+    const tipY = state.hero.pos.y + Math.sin(spinAngle) * spinRadius;
+    const spinAlpha = Math.min(1, state.kingAbilities.ultraSpinActiveTimer / 2);
+
+    // Scepter shaft
+    ctx.beginPath();
+    ctx.moveTo(state.hero.pos.x, state.hero.pos.y);
+    ctx.lineTo(tipX, tipY);
+    ctx.strokeStyle = `rgba(180, 130, 20, ${spinAlpha})`;
+    ctx.lineWidth = 5;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+
+    // Orb at tip
+    ctx.beginPath();
+    ctx.arc(tipX, tipY, 8, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(253, 224, 71, ${spinAlpha})`;
+    ctx.fill();
+    ctx.strokeStyle = `rgba(255, 255, 255, ${spinAlpha * 0.7})`;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+
 
   // Draw Hero
   const { hero } = state;
-  ctx.fillStyle = state.invulnerabilityTimer > 0 ? '#fcd34d' : (state.archetype === 'archer' ? '#3b82f6' : '#f97316');
+  const heroColor = state.invulnerabilityTimer > 0 ? '#fcd34d'
+    : state.archetype === 'archer' ? '#3b82f6'
+    : state.archetype === 'king' ? '#b45309'
+    : '#f97316';
+  ctx.fillStyle = heroColor;
   ctx.beginPath();
   ctx.arc(hero.pos.x, hero.pos.y, hero.radius, 0, Math.PI * 2);
   ctx.fill();

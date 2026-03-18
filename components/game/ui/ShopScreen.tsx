@@ -183,6 +183,60 @@ export function ShopScreen({ gameState, setGameState, shopTab, setShopTab }: Sho
                 )}
               </div>
 
+              {/* King Archetype */}
+              <div className={`p-4 rounded-lg border flex items-center justify-between ${gameState.archetype === 'king' ? 'bg-yellow-900/40 border-yellow-500' : 'bg-neutral-800 border-neutral-700'}`}>
+                <div className="text-left">
+                  <h4 className="text-xl font-bold text-yellow-400">King (Summoner)</h4>
+                  <p className="text-sm text-neutral-400">Commands the battlefield with cannonballs and chess piece allies.</p>
+                  <div className="flex gap-2 mt-2 flex-wrap">
+                    <span className="bg-neutral-700 px-2 py-1 rounded text-xs text-white">LMB: King Ball</span>
+                    <span className="bg-neutral-700 px-2 py-1 rounded text-xs text-white">RMB: Royal Smack</span>
+                    <span className="bg-neutral-700 px-2 py-1 rounded text-xs text-white">Q: Ultra Spin</span>
+                    <span className="bg-neutral-700 px-2 py-1 rounded text-xs text-white">E: Royal Help</span>
+                  </div>
+                </div>
+                {gameState.unlockedArchetypes.includes('king') ? (
+                  <button
+                    onClick={() => {
+                      setGameState(prev => {
+                        if (typeof window !== 'undefined') localStorage.setItem('hero_ascent_archetype', 'king');
+                        return { ...prev, archetype: 'king' };
+                      });
+                    }}
+                    className={`px-4 py-2 rounded font-bold ${gameState.archetype === 'king' ? 'bg-yellow-600 text-white cursor-default' : 'bg-neutral-700 text-white hover:bg-neutral-600'}`}
+                    disabled={gameState.archetype === 'king'}
+                  >
+                    {gameState.archetype === 'king' ? 'Selected' : 'Select'}
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      if (gameState.money >= 800) {
+                        setGameState(prev => {
+                          const newMoney = prev.money - 800;
+                          const newUnlocked = [...prev.unlockedArchetypes, 'king'];
+                          if (typeof window !== 'undefined') {
+                            localStorage.setItem('hero_ascent_money', newMoney.toString());
+                            localStorage.setItem('hero_ascent_unlocked_archetypes', JSON.stringify(newUnlocked));
+                            localStorage.setItem('hero_ascent_archetype', 'king');
+                          }
+                          return {
+                            ...prev,
+                            money: newMoney,
+                            unlockedArchetypes: newUnlocked as Archetype[],
+                            archetype: 'king'
+                          };
+                        });
+                      }
+                    }}
+                    className={`px-4 py-2 rounded font-bold ${gameState.money >= 800 ? 'bg-yellow-600 hover:bg-yellow-500 text-white' : 'bg-neutral-700 text-neutral-500 cursor-not-allowed'}`}
+                    disabled={gameState.money < 800}
+                  >
+                    Buy ($800)
+                  </button>
+                )}
+              </div>
+
             </div>
           </div>
         )}

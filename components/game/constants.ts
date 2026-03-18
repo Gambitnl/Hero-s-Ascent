@@ -1,5 +1,5 @@
 
-import { Abilities, Gadgets, Inventory, BarbarianAbilities, TeleporterAbilities, Hero } from './types';
+import { Abilities, Gadgets, Inventory, BarbarianAbilities, TeleporterAbilities, KingAbilities, Hero } from './types';
 
 // Defines the initial abilities for a hero.
 export const INITIAL_ABILITIES: Abilities = {
@@ -74,6 +74,32 @@ export const INITIAL_TELEPORTER_ABILITIES: TeleporterAbilities = {
 
   teleportAllyCooldown: 30, // Cooldown of the teleport ally ability, in seconds.
   teleportAllyTimer: 0, // Timer for the teleport ally ability.
+};
+
+// Defines the initial abilities for the King hero class.
+export const INITIAL_KING_ABILITIES: KingAbilities = {
+  kingBallDamage: 10,
+  kingBallShrapnelDamage: 5,
+  kingBallShrapnelCount: 12,
+  kingBallCooldown: 4,
+  kingBallTimer: 0,
+
+  royalSmackDamage: 70,
+  royalSmackLength: 200,
+  royalSmackCooldown: 8,
+  royalSmackTimer: 0,
+
+  ultraSpinDamage: 60,
+  ultraSpinRadius: 80,
+  ultraSpinCooldown: 4,
+  ultraSpinTimer: 0,
+  ultraSpinActiveTimer: 0,
+  ultraSpinDuration: 15,
+  ultraSpinAngle: 0,
+  ultraSpinSpeed: 0.8,
+
+  royalHelpCooldown: 15,
+  royalHelpTimer: 0,
 };
 
 /**

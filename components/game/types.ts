@@ -36,6 +36,8 @@ export interface Projectile {
   isBoomerang?: boolean; // If true, this is a boomerang that returns to the hero.
   targetPos?: Vector2; // The target position for projectiles like boomerangs.
   returning?: boolean; // For boomerangs, true if it's on its way back.
+  isCannonball?: boolean; // If true, this is a King Ball cannonball that explodes on impact.
+  isShrapnel?: boolean; // If true, this is shrapnel from a cannonball explosion.
 }
 
 /**
@@ -93,7 +95,7 @@ export interface Abilities {
 /**
  * Defines the available character classes.
  */
-export type Archetype = 'archer' | 'barbarian' | 'teleporter';
+export type Archetype = 'archer' | 'barbarian' | 'teleporter' | 'king';
 
 /**
  * Defines the abilities for the 'barbarian' archetype.
@@ -132,11 +134,43 @@ export interface RupturePath {
 }
 
 /**
+ * Defines the abilities for the 'king' archetype.
+ */
+export interface KingAbilities {
+  // LMB: King Ball (Cannonball)
+  kingBallDamage: number;
+  kingBallShrapnelDamage: number;
+  kingBallShrapnelCount: number;
+  kingBallCooldown: number;
+  kingBallTimer: number;
+
+  // RMB: Royal Smack (Holy Cross Ground Punch)
+  royalSmackDamage: number;
+  royalSmackLength: number;
+  royalSmackCooldown: number;
+  royalSmackTimer: number;
+
+  // Q: Ultra Spin (Scepter Sweep)
+  ultraSpinDamage: number;
+  ultraSpinRadius: number;
+  ultraSpinCooldown: number;
+  ultraSpinTimer: number;
+  ultraSpinActiveTimer: number;
+  ultraSpinDuration: number;
+  ultraSpinAngle: number;   // current scepter angle (radians)
+  ultraSpinSpeed: number;   // rotation speed (radians per second)
+
+  // E: Royal Help (Chess Piece Ally)
+  royalHelpCooldown: number;
+  royalHelpTimer: number;
+}
+
+/**
  * Represents a generic visual effect in the game.
  */
 export interface Effect {
   id: number; // A unique identifier for the effect.
-  type: 'slash' | 'circle' | 'dash' | 'rupture' | 'blackHole'; // The type of visual effect.
+  type: 'slash' | 'circle' | 'dash' | 'rupture' | 'blackHole' | 'royalCross'; // The type of visual effect.
   pos: Vector2; // The position of the effect.
   angle?: number; // The angle of the effect (e.g., for a slash).
   radius?: number; // The radius of the effect (e.g., for a circle).
@@ -239,6 +273,7 @@ export interface GameState {
   abilities: Abilities;
   barbarianAbilities: BarbarianAbilities;
   teleporterAbilities: TeleporterAbilities;
+  kingAbilities: KingAbilities;
   rupturePaths: RupturePath[];
   effects: Effect[];
   damageTexts: DamageText[];
