@@ -829,7 +829,10 @@ export const update = (state: GameState, dt: number) => {
         }
 
         // Hero collision
-        if (dist < hero.radius + m.radius && !m.isCharmed && !m.isFriendly && !m.isStopAttacking) {
+        const heroDx = hero.pos.x - m.pos.x;
+        const heroDy = hero.pos.y - m.pos.y;
+        const distToHero = Math.sqrt(heroDx * heroDx + heroDy * heroDy);
+        if (distToHero < hero.radius + m.radius && !m.isCharmed && !m.isFriendly && !m.isStopAttacking) {
           if ((state.archetype !== 'barbarian' || !state.barbarianAbilities.isDashing) && state.invulnerabilityTimer <= 0) {
             const dmg = Math.max(1, m.damage - hero.armor) * dt;
             hero.hp -= dmg; // Continuous damage while touching
