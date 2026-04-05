@@ -103,14 +103,14 @@ export function DevPanel({ gameState, setGameState }: DevPanelProps) {
     });
   };
 
-  const despawnEntity = (monsterId: string) => {
+  const despawnEntity = (monsterId: number) => {
     setGameState(prev => ({
       ...prev,
       monsters: prev.monsters.filter(m => m.id !== monsterId),
     }));
   };
 
-  const toggleMonsterProperty = (monsterId: string, key: 'isInert' | 'isImmune' | 'isStopAttacking') => {
+  const toggleMonsterProperty = (monsterId: number, key: 'isInert' | 'isImmune' | 'isStopAttacking') => {
     setGameState(prev => ({
       ...prev,
       monsters: prev.monsters.map(m =>

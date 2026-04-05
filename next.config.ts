@@ -2,6 +2,8 @@ import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // Required for GitHub Pages - matches repo name
+  basePath: '/Hero-s-Ascent',
   eslint: {
     ignoreDuringBuilds: true,
   },
