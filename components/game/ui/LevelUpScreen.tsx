@@ -41,7 +41,10 @@ export function LevelUpScreen({ gameState, setGameState }: LevelUpScreenProps) {
                   ...prev,
                   abilities: { ...prev.abilities },
                   barbarianAbilities: { ...prev.barbarianAbilities },
-                  hero: { ...prev.hero }
+                  teleporterAbilities: { ...prev.teleporterAbilities },
+                  kingAbilities: { ...prev.kingAbilities },
+                  hero: { ...prev.hero },
+                  monsters: prev.monsters.map(m => ({ ...m }))
                 };
                 // Apply the chosen upgrade to the new game state
                 choice.apply(newState);

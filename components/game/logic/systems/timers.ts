@@ -14,6 +14,7 @@ export const updateTimers = (state: GameState, dt: number) => {
 
   if (abilities.arrowRainTimer > 0) abilities.arrowRainTimer -= dt;
   if (abilities.loveArrowTimer > 0) abilities.loveArrowTimer -= dt;
+  if (abilities.pirouetteTimer > 0) abilities.pirouetteTimer -= dt;
 
   // Arrow Rain Active Effect
   if (state.archetype === 'archer' && abilities.arrowRainActiveTimer !== undefined && abilities.arrowRainActiveTimer > 0) {

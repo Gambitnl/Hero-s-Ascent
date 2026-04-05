@@ -14,6 +14,13 @@ export const INITIAL_ABILITIES: Abilities = {
   arrowRainActiveTimer: 0, // A timer for how long the arrow rain ability is active.
   loveArrowTimer: 0, // A timer for the love arrow ability.
   loveArrowCooldown: 30, // The cooldown for the love arrow ability, in seconds.
+  pirouetteTimer: 0,
+  pirouetteCooldown: 5,
+  pirouetteActive: false,
+  pirouetteFireTimer: 0,
+  pirouetteArrowsFired: 0,
+  pirouetteTotalArrows: 8, // "Let's start with a low amount of arrows"
+  pirouetteBaseAngle: 0,
 };
 
 // Defines the initial gadgets for a hero.

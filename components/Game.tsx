@@ -164,6 +164,13 @@ export default function Game() {
   // This effect sets up and tears down event listeners for keyboard and mouse input.
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (stateRef.current.status === 'playing') {
+          setGameState(prev => ({ ...prev, status: 'paused' }));
+        } else if (stateRef.current.status === 'paused') {
+          setGameState(prev => ({ ...prev, status: 'playing' }));
+        }
+      }
       stateRef.current.keys[e.key.toLowerCase()] = true;
     };
     const handleKeyUp = (e: KeyboardEvent) => {

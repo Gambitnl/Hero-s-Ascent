@@ -16,7 +16,7 @@ function HUDBox({
   color = 'blue' 
 }: { 
   label: string; 
-  value: string | number; 
+  value: React.ReactNode; 
   timer?: number; 
   cooldown?: number; 
   color?: string;
@@ -59,7 +59,7 @@ function HUDBox({
           </span>
         )}
       </div>
-      <span className="font-mono text-white">{value}</span>
+      <div className="font-mono text-white text-xs mt-1 space-y-0.5">{value}</div>
     </div>
   );
 }
@@ -67,20 +67,47 @@ function HUDBox({
 export function AbilitiesHUD({ gameState }: AbilitiesHUDProps) {
   const renderArcherAbilities = () => (
     <>
-      <HUDBox label="Damage" value={gameState.abilities.damage} />
-      <HUDBox label="Fire Rate" value={`${gameState.abilities.fireRate.toFixed(1)}/s`} />
-      <HUDBox label="Projectiles" value={`${gameState.abilities.projectileCount} (Pierce: ${gameState.abilities.maxPierce})`} />
-      
+      <HUDBox 
+        label="Bow (LMB)" 
+        value={
+          <>
+            <div>Dmg: {gameState.abilities.damage}</div>
+            <div className="text-neutral-400">Rate: {gameState.abilities.fireRate.toFixed(1)}/s</div>
+            <div className="text-neutral-400">Proj: {gameState.abilities.projectileCount} (Pierce: {gameState.abilities.maxPierce})</div>
+          </>
+        }
+        color="blue"
+      />
+      <HUDBox 
+        label="Twin Shot (RMB)" 
+        value={
+          <>
+            <div>Cost: 15 Mana</div>
+            <div className="text-neutral-400">Fires Forward & Back</div>
+          </>
+        }
+        color="blue"
+      />
       <HUDBox 
         label="Rain (Q)" 
-        value="5s Duration" 
+        value={
+          <>
+            <div>Duration: 5s</div>
+            <div className="text-neutral-400">Cost: 30 Mana</div>
+          </>
+        }
         timer={gameState.abilities.arrowRainTimer} 
         cooldown={gameState.abilities.arrowRainCooldown} 
         color="blue"
       />
       <HUDBox 
         label="Love (E)" 
-        value="10s Charm" 
+        value={
+          <>
+            <div>Charm: 10s</div>
+            <div className="text-neutral-400">Cost: 25 Mana</div>
+          </>
+        }
         timer={gameState.abilities.loveArrowTimer} 
         cooldown={gameState.abilities.loveArrowCooldown} 
         color="pink"
@@ -92,28 +119,47 @@ export function AbilitiesHUD({ gameState }: AbilitiesHUDProps) {
     <>
       <HUDBox 
         label="Slash (LMB)" 
-        value={`Dmg: ${gameState.barbarianAbilities.sweepingStrikeDamage}`} 
+        value={
+          <>
+            <div>Dmg: {gameState.barbarianAbilities.sweepingStrikeDamage}</div>
+          </>
+        }
         timer={gameState.barbarianAbilities.sweepingStrikeTimer} 
         cooldown={gameState.barbarianAbilities.sweepingStrikeCooldown} 
         color="red"
       />
       <HUDBox 
         label="Spin (RMB)" 
-        value={`Dmg: ${gameState.barbarianAbilities.sweepingRoundDamage}`} 
+        value={
+          <>
+            <div>Dmg: {gameState.barbarianAbilities.sweepingRoundDamage}</div>
+            <div className="text-neutral-400">Cost: 10 Mana</div>
+          </>
+        }
         timer={gameState.barbarianAbilities.sweepingRoundTimer} 
         cooldown={gameState.barbarianAbilities.sweepingRoundCooldown} 
         color="red"
       />
       <HUDBox 
         label="Rupture (Q)" 
-        value={`Dmg: ${gameState.barbarianAbilities.ruptureDamage}`} 
+        value={
+          <>
+            <div>Dmg: {gameState.barbarianAbilities.ruptureDamage}</div>
+            <div className="text-neutral-400">Cost: 20 Mana</div>
+          </>
+        }
         timer={gameState.barbarianAbilities.ruptureTimer} 
         cooldown={gameState.barbarianAbilities.ruptureCooldown} 
         color="red"
       />
       <HUDBox 
         label="Dash (E)" 
-        value={`Dmg: ${gameState.barbarianAbilities.rageDashDamage}`} 
+        value={
+          <>
+            <div>Dmg: {gameState.barbarianAbilities.rageDashDamage}</div>
+            <div className="text-neutral-400">Cost: 15 Mana</div>
+          </>
+        }
         timer={gameState.barbarianAbilities.rageDashTimer} 
         cooldown={gameState.barbarianAbilities.rageDashCooldown} 
         color="red"
@@ -125,30 +171,52 @@ export function AbilitiesHUD({ gameState }: AbilitiesHUDProps) {
     <>
       <HUDBox
         label="King Ball (LMB)"
-        value={`Dmg: ${gameState.kingAbilities.kingBallDamage}`}
+        value={
+          <>
+            <div>Dmg: {gameState.kingAbilities.kingBallDamage}</div>
+            <div className="text-neutral-400">Shrapnel: {gameState.kingAbilities.kingBallShrapnelCount}x (Dmg: {gameState.kingAbilities.kingBallShrapnelDamage})</div>
+          </>
+        }
         timer={gameState.kingAbilities.kingBallTimer}
         cooldown={gameState.kingAbilities.kingBallCooldown}
         color="neutral"
       />
       <HUDBox
         label="Royal Smack (RMB)"
-        value={`Dmg: ${gameState.kingAbilities.royalSmackDamage}`}
+        value={
+          <>
+            <div>Dmg: {gameState.kingAbilities.royalSmackDamage}</div>
+            <div className="text-neutral-400">Reach: {gameState.kingAbilities.royalSmackLength}</div>
+          </>
+        }
         timer={gameState.kingAbilities.royalSmackTimer}
         cooldown={gameState.kingAbilities.royalSmackCooldown}
         color="neutral"
       />
       <HUDBox
         label="Ultra Spin (Q)"
-        value={gameState.kingAbilities.ultraSpinActiveTimer > 0
-          ? `Active: ${gameState.kingAbilities.ultraSpinActiveTimer.toFixed(1)}s`
-          : `Dmg: ${gameState.kingAbilities.ultraSpinDamage}/s`}
+        value={
+          <>
+            {gameState.kingAbilities.ultraSpinActiveTimer > 0 && (
+              <div className="text-yellow-400">Active: {gameState.kingAbilities.ultraSpinActiveTimer.toFixed(1)}s</div>
+            )}
+            <div>Dmg: {gameState.kingAbilities.ultraSpinDamage}/s</div>
+            <div className="text-neutral-400">Radius: {gameState.kingAbilities.ultraSpinRadius}</div>
+            <div className="text-neutral-400">Duration: {gameState.kingAbilities.ultraSpinDuration}s</div>
+          </>
+        }
         timer={gameState.kingAbilities.ultraSpinTimer}
         cooldown={gameState.kingAbilities.ultraSpinCooldown}
         color="neutral"
       />
       <HUDBox
         label="Royal Help (E)"
-        value="Chess Piece Ally"
+        value={
+          <>
+            <div>Chess Piece Ally</div>
+            <div className="text-neutral-400">Boosts Minions on Level Up</div>
+          </>
+        }
         timer={gameState.kingAbilities.royalHelpTimer}
         cooldown={gameState.kingAbilities.royalHelpCooldown}
         color="neutral"
@@ -160,21 +228,36 @@ export function AbilitiesHUD({ gameState }: AbilitiesHUDProps) {
     <>
       <HUDBox 
         label="Boomerang (LMB)" 
-        value={`Dmg: ${gameState.teleporterAbilities.boomerangDamage}`} 
+        value={
+          <>
+            <div>Dmg: {Math.floor(gameState.teleporterAbilities.boomerangDamage)}</div>
+            <div className="text-neutral-400">Count: {gameState.teleporterAbilities.boomerangCount}</div>
+          </>
+        }
         timer={gameState.teleporterAbilities.boomerangTimer} 
         cooldown={gameState.teleporterAbilities.boomerangCooldown} 
         color="purple"
       />
       <HUDBox 
         label="Black Hole (RMB)" 
-        value="Crowd Control" 
+        value={
+          <>
+            <div>Crowd Control</div>
+            <div className="text-neutral-400">Radius: {Math.floor(gameState.teleporterAbilities.blackHoleRadius)}</div>
+            <div className="text-neutral-400">Duration: {gameState.teleporterAbilities.blackHoleDuration}s</div>
+          </>
+        }
         timer={gameState.teleporterAbilities.blackHoleTimer} 
         cooldown={gameState.teleporterAbilities.blackHoleCooldown} 
         color="purple"
       />
       <HUDBox 
         label="Portal (Q)" 
-        value={`Dmg: ${gameState.teleporterAbilities.dimensionDoorDamage}`} 
+        value={
+          <>
+            <div>Dmg: {gameState.teleporterAbilities.dimensionDoorDamage}</div>
+          </>
+        }
         timer={gameState.teleporterAbilities.dimensionDoorTimer} 
         cooldown={gameState.teleporterAbilities.dimensionDoorCooldown} 
         color="purple"

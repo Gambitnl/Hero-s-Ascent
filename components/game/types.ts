@@ -90,6 +90,14 @@ export interface Abilities {
   arrowRainActiveTimer?: number; // A timer for how long the "arrow rain" effect is active.
   loveArrowTimer: number; // A timer for the "love arrow" ability cooldown.
   loveArrowCooldown: number; // The total cooldown time for "love arrow".
+  
+  pirouetteTimer: number;
+  pirouetteCooldown: number;
+  pirouetteActive: boolean;
+  pirouetteFireTimer: number;
+  pirouetteArrowsFired: number;
+  pirouetteTotalArrows: number;
+  pirouetteBaseAngle: number;
 }
 
 /**
